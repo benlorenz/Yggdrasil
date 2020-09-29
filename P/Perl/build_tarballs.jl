@@ -64,6 +64,7 @@ else
    # native
 
    # config overrides
+   # (not needed for cross-compilation where the correct value should be in config.sh)
    if [[ $target = *-gnu ]]; then
       # disable xlocale.h usage (which was removed in recent glibc)
       cp ../patches/config.arch.gnu config.arch
@@ -100,7 +101,8 @@ platforms = [
     Linux(:x86_64, libc=:glibc)
     Linux(:i686, libc=:glibc)
     Linux(:x86_64, libc=:musl)
-    Linux(:i686, libc=:musl)
+    Linux(:aarch64, libc=:glibc)
+    Linux(:armv7l, libc=:glibc, call_abi=:eabihf)
 ]
 
 
@@ -116,5 +118,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;preferred_gcc_version=v"7")
 
