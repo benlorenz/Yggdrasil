@@ -3,6 +3,7 @@
 using BinaryBuilder
 import Pkg: PackageSpec
 import Pkg.Types: VersionSpec
+import Base.BinaryPlatforms: add_tag!, tags
 
 name = "libsingular_julia"
 version = VersionNumber(0, 11, julia_version.minor)
@@ -29,12 +30,15 @@ VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
 install_license LICENSE.md
 """
 
+julia_compat = "$(julia_version.major).$(julia_version.minor)"
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
 platforms = libjulia_platforms(julia_version)
 platforms = filter!(!Sys.iswindows, platforms) # Singular does not support Windows
 platforms = expand_cxxstring_abis(platforms)
+add_tag!.(tags.(platforms),"julia_version",julia_compat)
 
 # The products that we will ensure are always built
 products = [
@@ -44,8 +48,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version)),
-    BuildDependency(PackageSpec(name="GMP_jll", version=v"6.1.2")),
-    BuildDependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")),
+    BuildDependency(PackageSpec(name="GMP_jll")),
+    BuildDependency(PackageSpec(name="MPFR_jll")),
     Dependency("libcxxwrap_julia_jll"),
     Dependency("Singular_jll", compat = "~402.000.102"),
 ]
@@ -53,4 +57,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"8",
-    julia_compat = "$(julia_version.major).$(julia_version.minor)")
+    julia_compat = julia_compat)
